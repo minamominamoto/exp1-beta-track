@@ -4,7 +4,7 @@ Pre-registered behavioral experiment on whether instruction-tuned LLMs
 (Qwen2.5-7B-Instruct) revert a prior conversational frame when the user
 switches to a neutral prompt.
 
-**Pre-registration**: OSF [DOI pending]
+**Pre-registration**: OSF [10.17605/OSF.IO/9EYXR](https://doi.org/10.17605/OSF.IO/9EYXR)
 **Author**: Minamo Minamoto (ORCID 0009-0002-1201-5704)
 **Submitted**: 2026-05-18 (fast-track)
 **Target venue**: TMLR (2026-07-14)
