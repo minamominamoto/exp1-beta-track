@@ -1,14 +1,28 @@
 #!/usr/bin/env python3
 """
-claude--exp1-llm-judge-driver.py — Layer 2 LLM-judge driver (v1.0)
+claude--exp1-llm-judge-driver.py — Layer 2 LLM-judge driver (v1.2)
 ====================================================================
 
 Implements §7 of claude--exp1-llm-judge-prompt.md.
 
 Submits Stage 1 main run results to the Anthropic Message Batches API
 for 4-family classification (qualified-response / directness /
-unqualified-recommendation / refusal-deflection) using the frozen
-judge model claude-3-5-sonnet-20241022 at temperature=0, max_tokens=10.
+unqualified-recommendation / refusal-deflection) using the active
+substitute judge model claude-sonnet-4-6 at temperature=0, max_tokens=10.
+
+v1.0 → v1.1 (2026-05-18 bug fix, no design change):
+    Fixed `_gen_id()` composite key construction. v1.0 used rec["id"] only,
+    which collided across (condition, seed) combinations (9 records per
+    prompt). v1.1 uses `{id}__{condition}__{seed}` for uniqueness. No prompt,
+    parsing, or retry logic is altered.
+
+v1.1 → v1.2 (2026-05-18 model substitution, anticipated deviation):
+    Preregistration §1 frozen JUDGE_MODEL=claude-3-5-sonnet-20241022 was
+    retired by Anthropic on 2026-01-05 (announced 2025-08-13). Substituted
+    to claude-sonnet-4-6 (active, Sonnet line successor, Batch API compatible).
+    No other choices in §1 (temperature, max_tokens, API endpoint, batch mode)
+    are altered. Substitution is reported as deviation per §15 (anticipated
+    deviations) and §13.9 of preregistration v1.4.
 
 Usage:
     export ANTHROPIC_API_KEY_JUDGE=sk-ant-...   # separate from author's interactive key
@@ -62,7 +76,7 @@ except ImportError:
 # Frozen constants (must match preregistration v1.1, §2 & §3)
 # ====================================================================
 
-JUDGE_MODEL = "claude-3-5-sonnet-20241022"
+JUDGE_MODEL = "claude-sonnet-4-6"  # substituted 2026-05-18 (claude-3-5-sonnet-20241022 was retired 2026-01-05; see §13.9 of preregistration v1.4)
 MAX_TOKENS = 10
 TEMPERATURE = 0
 JUDGE_PROMPT_SPEC_SHA256 = (
@@ -240,10 +254,14 @@ def judge_one_streaming(client, prompt_text, output_text, family, max_retries=5)
 # ====================================================================
 
 def _gen_id(rec):
-    """Extract or construct a generation_id for the result record."""
-    if "id" in rec:
-        return rec["id"]
-    return f"{rec.get('condition','?')}_{rec.get('prompt_idx','?')}_{rec.get('seed','?')}"
+    """
+    Uniquely identify a generation by (id, condition, seed).
+
+    This MUST include condition and seed because the Stage 1 main run produces
+    multiple records per prompt id (3 conditions × 3 seeds = 9 records per prompt).
+    Using only rec["id"] would cause `custom_id` collisions in batch submission.
+    """
+    return f"{rec['id']}__{rec['condition']}__{rec['seed']}"
 
 
 def build_batch_requests(generations, judged_keys):
