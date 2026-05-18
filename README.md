@@ -21,6 +21,8 @@ switches to a neutral prompt.
 | `claude--exp1-postprobe-recompute.py` | v2.1 audit reproducibility script |
 | `claude--exp1-blind-audit-coding-scheme.md` | Layer 3 blinded author audit procedure |
 | `_archive_preregistration-v1.md` | Reference: original v1 with 1-week cooling-off plan |
+| `claude--exp1-preregistration-v1.2.md` | Post-registration update (DOI embed + §13.8 driver implementation) |
+| `claude--exp1-llm-judge-driver.py` | Layer 2 LLM-judge driver (Batch + streaming, resume) |
 
 ## License
 
